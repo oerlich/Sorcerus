@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include "Entity.h"
+#include "Player.h"
 #include <glm/gtc/type_ptr.hpp>
 
 class GameWorld
@@ -15,6 +16,8 @@ private:
     std::vector<Entity*> texturedEntities;
     std::vector<Entity*> noTexEntities;
 
+
+
     std::vector<glm::vec3> pointLights_pos;
     std::vector<glm::vec3> pointLights_col_int;
 public:
@@ -22,6 +25,7 @@ public:
     virtual ~GameWorld();
     void addEntity(Entity* ent);
     void addLight(glm::vec3 pos, glm::vec3 colorIntensity);
+    Player* player;
     
     std::vector<glm::vec3> getLightPositions();
     std::vector<glm::vec3> getLightColorIntensity();

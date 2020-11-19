@@ -87,8 +87,6 @@ public:
 	vec3 gMin;
     vec3 gMax;
 
-    Camera cam = Camera(0.01, 0.2, vec3(-0.5, -0.6, 3.5));
-
 	void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -96,52 +94,52 @@ public:
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
         if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-            cam.enableCursor(windowManager);
+            Game.player->cam.enableCursor(windowManager);
         }
         if (key == GLFW_KEY_C && action == GLFW_RELEASE) {
             glfwSetInputMode(windowManager->getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
         if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-            cam.dollyF = true;
+            Game.player->cam.dollyF = true;
         }
         if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
-            cam.dollyF = false;
+            Game.player->cam.dollyF = false;
         }
         if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-            cam.dollyB = true;
+            Game.player->cam.dollyB = true;
         }
         if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-            cam.dollyB = false;
+            Game.player->cam.dollyB = false;
         }
         if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-            cam.strafeL = true;
+            Game.player->cam.strafeL = true;
         }
         if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
-            cam.strafeL = false;
+            Game.player->cam.strafeL = false;
         }
         if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-            cam.strafeR = true;
+            Game.player->cam.strafeR = true;
         }
         if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
-            cam.strafeR = false;
+            Game.player->cam.strafeR = false;
         }
         if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-            cam.rise = true;
+            Game.player->cam.rise = true;
         }
         if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
-            cam.rise = false;
+            Game.player->cam.rise = false;
         }
         if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS) {
-            cam.fall = true;
+            Game.player->cam.fall = true;
         }
         if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_RELEASE) {
-            cam.fall = false;
+            Game.player->cam.fall = false;
         }
         if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS) {
-            cam.setSpeed(0.05);
+            Game.player->cam.setSpeed(0.05);
         }
         if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE) {
-            cam.setSpeed(0.01);
+            Game.player->cam.setSpeed(0.01);
         }
 		if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -384,19 +382,21 @@ public:
             geometry["fire"] = new Mesh(TOshapes);
         }
 
-        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/bunny.obj").c_str());
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/dummy.obj").c_str());
 
         if (!rc) {
             cerr << errStr << endl;
         }
         else {
-            geometry["bunny"] = new Mesh(TOshapes);
+            geometry["dummy"] = new Mesh(TOshapes);
         }
 
 	}
 
     void initWorld()
     {  
+        Game.player = new Player(vec3(-0.5, -1.5, 3.5), vec3(1, 1, 1), 0.0, 0.0, 0.0, geometry["dummy"], nullptr, 1, 1.0);
+
         //fountain
         Game.addEntity(new Obstacle(vec3(-0.5, -1.5, 0.5), vec3(0.002, 0.002, 0.002), 0.0f, 0.0f, 0.0f, geometry["fountain"], texture1, 0));
         Game.addEntity(new Obstacle(vec3(-0.5, -1.5, 0.5), vec3(0.002, 0.002, 0.002), 0.0f, 0.0f, 0.0f, geometry["fountain_water"], nullptr, 14));
@@ -737,19 +737,19 @@ public:
 		Projection->pushMatrix();
 		Projection->perspective(45.0f, aspect, 0.01f, 300.0f);
 
-        cam.setUpCam(windowManager);
+        Game.player->cam.setUpCam(windowManager);
         vector<glm::vec3> lightPositions = Game.getLightPositions();
         vector<glm::vec3> lightColorIntensity = Game.getLightColorIntensity();
         int numLights = lightPositions.size();
 
 		View->pushMatrix();
 			View->loadIdentity();
-            View->lookAt(cam.eye, cam.lookAt, cam.upVector);
+            View->lookAt(Game.player->cam.eye, Game.player->cam.lookAt, Game.player->cam.upVector);
             
         matShader->bind();
 		glUniformMatrix4fv(matShader->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
 		glUniformMatrix4fv(matShader->getUniform("V"), 1, GL_FALSE, value_ptr(View->topMatrix()));
-        glUniform3f(matShader->getUniform("eye"), cam.eye.x, cam.eye.y, cam.eye.z);
+        glUniform3f(matShader->getUniform("eye"), Game.player->cam.eye.x, Game.player->cam.eye.y, Game.player->cam.eye.z);
 
         glUniform3fv(matShader->getUniform("lightPositions"), numLights, &lightPositions[0].x);
         glUniform3fv(matShader->getUniform("lightColInt"), numLights, &lightColorIntensity[0].x);
@@ -842,7 +842,7 @@ int main(int argc, char *argv[])
 	// and GL context, etc.
 
 	WindowManager *windowManager = new WindowManager();
-	windowManager->init(1920, 1080);
+	windowManager->init(1280, 720);
 	windowManager->setEventCallbacks(application);
 	application->windowManager = windowManager;
 
