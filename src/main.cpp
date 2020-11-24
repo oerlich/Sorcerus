@@ -100,46 +100,40 @@ public:
             glfwSetInputMode(windowManager->getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
         if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-            Game.player->cam.dollyF = true;
+            Game.player->moveF = true;
         }
         if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
-            Game.player->cam.dollyF = false;
+            Game.player->moveF = false;
         }
         if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-            Game.player->cam.dollyB = true;
+            Game.player->moveB = true;
         }
         if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-            Game.player->cam.dollyB = false;
+            Game.player->moveB = false;
         }
         if (key == GLFW_KEY_A && action == GLFW_PRESS) {
-            Game.player->cam.strafeL = true;
+            Game.player->moveL = true;
         }
         if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
-            Game.player->cam.strafeL = false;
+            Game.player->moveL = false;
         }
         if (key == GLFW_KEY_D && action == GLFW_PRESS) {
-            Game.player->cam.strafeR = true;
+            Game.player->moveR = true;
         }
         if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
-            Game.player->cam.strafeR = false;
+            Game.player->moveR = false;
         }
         if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-            Game.player->cam.rise = true;
+            Game.player->jump = true;
         }
         if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
-            Game.player->cam.rise = false;
-        }
-        if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS) {
-            Game.player->cam.fall = true;
-        }
-        if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_RELEASE) {
-            Game.player->cam.fall = false;
+            Game.player->jump = false;
         }
         if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS) {
-            Game.player->cam.setSpeed(0.05);
+            Game.player->setSpeed(0.03);
         }
         if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE) {
-            Game.player->cam.setSpeed(0.01);
+            Game.player->setSpeed(0.015);
         }
 		if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -191,6 +185,7 @@ public:
         matShader->addUniform("eye");
         matShader->addUniform("lightPositions");
         matShader->addUniform("lightColInt");
+        matShader->addUniform("lightABC");
         matShader->addUniform("numLights");
         matShader->addAttribute("vertPos");
         matShader->addAttribute("vertNor");
@@ -206,6 +201,7 @@ public:
         texShader->addUniform("Texture0");
         texShader->addUniform("lightPositions");
         texShader->addUniform("lightColInt");
+        texShader->addUniform("lightABC");
         texShader->addUniform("numLights");
         texShader->addUniform("flip");
         texShader->addAttribute("vertPos");
@@ -382,20 +378,29 @@ public:
             geometry["fire"] = new Mesh(TOshapes);
         }
 
-        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/dummy.obj").c_str());
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/player.obj").c_str());
 
         if (!rc) {
             cerr << errStr << endl;
         }
         else {
-            geometry["dummy"] = new Mesh(TOshapes);
+            geometry["player"] = new Mesh(TOshapes);
+        }
+
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/floor.obj").c_str());
+
+        if (!rc) {
+            cerr << errStr << endl;
+        }
+        else {
+            geometry["floor"] = new Mesh(TOshapes);
         }
 
 	}
 
     void initWorld()
     {  
-        Game.player = new Player(vec3(-0.5, -1.5, 3.5), vec3(1, 1, 1), 0.0, 0.0, 0.0, geometry["dummy"], nullptr, 1, 1.0);
+        Game.player = new Player(vec3(-0.5, -1.5, 3.5), vec3(0.006, 0.006, 0.006), -M_PI/2, M_PI/2, 0.0, geometry["player"], nullptr, 1, 1.0);
 
         //fountain
         Game.addEntity(new Obstacle(vec3(-0.5, -1.5, 0.5), vec3(0.002, 0.002, 0.002), 0.0f, 0.0f, 0.0f, geometry["fountain"], texture1, 0));
@@ -418,41 +423,43 @@ public:
         Game.addEntity(new Obstacle(vec3(-0.9+0.33, -1.3, -4.5), vec3(0.0003, 0.0005, 0.0005), 0.0f, 0.0f, 0.0f, geometry["fence"], texture0, 0));
         Game.addEntity(new Obstacle(vec3(-0.9, -2.07, -4.5), vec3(0.2, 0.2, 0.2), 0.0f, 0.0f, 0.0f, geometry["archway"], texture2, 0));
 
-        //torches
-        Game.addEntity(new Obstacle(vec3(-0.5,0,-4.5), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
-        Game.addEntity(new Obstacle(vec3(-0.5, 0.23, -4.38), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
-        Game.addLight(vec3(-0.5, 0.43, -4.25), vec3(1.0, 0.57647, 0.16078));
-
-        Game.addEntity(new Obstacle(vec3(0.25, -0.75, -4.5), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
-        Game.addEntity(new Obstacle(vec3(0.25, -0.52, -4.38), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
-        Game.addLight(vec3(0.25, -0.32, -4.25), vec3(1.0, 0.57647, 0.16078));
-
-        Game.addEntity(new Obstacle(vec3(-1.25, -0.75, -4.5), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
-        Game.addEntity(new Obstacle(vec3(-1.25, -0.52, -4.38), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
-        Game.addLight(vec3(-1.25, -0.32, -4.25), vec3(1.0, 0.57647, 0.16078));
-
-        Game.addEntity(new Obstacle(vec3(5, -0.75, 3), vec3(1, 1, 1), 0.0f, 0.0f, glm::radians(30.0), geometry["torch"], texture11, 11));
-        Game.addEntity(new Obstacle(vec3(4.88, -0.52, 3), vec3(1, 1, 1), 0.0f, 0.0f, glm::radians(30.0), geometry["fire"], texture12, 11));
-        Game.addLight(vec3(4.75, -0.32, 3), vec3(1.0, 0.57647, 0.16078));
-
-        Game.addEntity(new Obstacle(vec3(5, -0.75, -2.5), vec3(1, 1, 1), 0.0f, 0.0f, glm::radians(30.0), geometry["torch"], texture11, 11));
-        Game.addEntity(new Obstacle(vec3(4.88, -0.52, -2.5), vec3(1, 1, 1), 0.0f, 0.0f, glm::radians(30.0), geometry["fire"], texture12, 11));
-        Game.addLight(vec3(4.75, -0.32, -2.5), vec3(1.0, 0.57647, 0.16078));
-
-        Game.addEntity(new Obstacle(vec3(3.25, -0.75, 5.65), vec3(1, 1, 1), glm::radians(-30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
-        Game.addEntity(new Obstacle(vec3(3.25, -0.52, 5.53), vec3(1, 1, 1), glm::radians(-30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
-        Game.addLight(vec3(3.25, -0.32, 5.40), vec3(1.0, 0.57647, 0.16078));
-
-        Game.addEntity(new Obstacle(vec3(-4.25, -0.75, 5.65), vec3(1, 1, 1), glm::radians(-30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
-        Game.addEntity(new Obstacle(vec3(-4.25, -0.52, 5.53), vec3(1, 1, 1), glm::radians(-30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
-        Game.addLight(vec3(-4.25, -0.32, 5.40), vec3(1.0, 0.57647, 0.16078));
-
         //clutter
         Game.addEntity(new Obstacle(vec3(3, -1.18, -4), vec3(0.002, 0.002, 0.002), 0.0f, 0.0f, 0.0f, geometry["barrel"], texture5, 0));
         Game.addEntity(new Obstacle(vec3(3.1, -1.33, -3.4), vec3(0.001, 0.001, 0.001), 0.0f, glm::radians(90.0), 0.0f, geometry["barrel"], texture5, 0));
         Game.addEntity(new Obstacle(vec3(3.5, -1.245, -3.6), vec3(0.5, 0.5, 0.5), 0.0f, 0.0f, 0.0f, geometry["cube_tex"], texture0, 0));
         Game.addEntity(new Obstacle(vec3(4.35, -1.09, -3.95), vec3(1.24, 0.8, 0.8), 0.0f, 0.0f, 0.0f, geometry["cube_tex"], texture0, 0));
         Game.addEntity(new Obstacle(vec3(4.45, -1.25, 4.6), vec3(0.5, 0.5, 0.5), 0.0f, glm::radians(180.0), 0.0f, geometry["crates"], texture0, 0));
+
+        //torches
+        {
+            Game.addEntity(new Obstacle(vec3(-0.5, 0, -4.5), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
+            Game.addEntity(new Obstacle(vec3(-0.5, 0.23, -4.38), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
+            Game.addLight(vec3(-0.5, 0.43, -4.25), vec3(1.0, 0.57647, 0.16078), vec3(0, 1, 0.1));
+
+            Game.addEntity(new Obstacle(vec3(0.25, -0.75, -4.5), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
+            Game.addEntity(new Obstacle(vec3(0.25, -0.52, -4.38), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
+            Game.addLight(vec3(0.25, -0.32, -4.25), vec3(1.0, 0.57647, 0.16078), vec3(0, 1, 0.1));
+
+            Game.addEntity(new Obstacle(vec3(-1.25, -0.75, -4.5), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
+            Game.addEntity(new Obstacle(vec3(-1.25, -0.52, -4.38), vec3(1, 1, 1), glm::radians(30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
+            Game.addLight(vec3(-1.25, -0.32, -4.25), vec3(1.0, 0.57647, 0.16078), vec3(0, 1, 0.1));
+
+            Game.addEntity(new Obstacle(vec3(5, -0.75, 3), vec3(1, 1, 1), 0.0f, 0.0f, glm::radians(30.0), geometry["torch"], texture11, 11));
+            Game.addEntity(new Obstacle(vec3(4.88, -0.52, 3), vec3(1, 1, 1), 0.0f, 0.0f, glm::radians(30.0), geometry["fire"], texture12, 11));
+            Game.addLight(vec3(4.75, -0.32, 3), vec3(1.0, 0.57647, 0.16078), vec3(0, 1, 0.1));
+
+            Game.addEntity(new Obstacle(vec3(5, -0.75, -2.5), vec3(1, 1, 1), 0.0f, 0.0f, glm::radians(30.0), geometry["torch"], texture11, 11));
+            Game.addEntity(new Obstacle(vec3(4.88, -0.52, -2.5), vec3(1, 1, 1), 0.0f, 0.0f, glm::radians(30.0), geometry["fire"], texture12, 11));
+            Game.addLight(vec3(4.75, -0.32, -2.5), vec3(1.0, 0.57647, 0.16078), vec3(0, 1, 0.1));
+
+            Game.addEntity(new Obstacle(vec3(3.25, -0.75, 5.65), vec3(1, 1, 1), glm::radians(-30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
+            Game.addEntity(new Obstacle(vec3(3.25, -0.52, 5.53), vec3(1, 1, 1), glm::radians(-30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
+            Game.addLight(vec3(3.25, -0.32, 5.40), vec3(1.0, 0.57647, 0.16078), vec3(0, 1, 0.1));
+
+            Game.addEntity(new Obstacle(vec3(-4.25, -0.75, 5.65), vec3(1, 1, 1), glm::radians(-30.0), 0.0f, 0.0f, geometry["torch"], texture11, 11));
+            Game.addEntity(new Obstacle(vec3(-4.25, -0.52, 5.53), vec3(1, 1, 1), glm::radians(-30.0), 0.0f, 0.0f, geometry["fire"], texture12, 11));
+            Game.addLight(vec3(-4.25, -0.32, 5.40), vec3(1.0, 0.57647, 0.16078), vec3(0, 1, 0.1));
+        }
 
         //wagon
         {
@@ -510,11 +517,7 @@ public:
         }
 
         // floor
-        {
-            for (int i = -6; i <= 6; i+=2)
-                for (int j = -6; j <= 6; j+=2)
-                    Game.addEntity(new Obstacle(vec3(i, -1.5, -j), vec3(1, 1, 1), 0.0f, 0.0f, 0.0f, geometry["floortile"], texture3, 11));
-        }
+        Game.addEntity(new Obstacle(vec3(0, -1.5, 0), vec3(1, 1, 1), 0.0f, 0.0f, 0.0f, geometry["floor"], texture3, 11));
         
     }
 
@@ -537,7 +540,7 @@ public:
         texture3 = make_shared<Texture>();
         texture3->setFilename(resourceDirectory + "/street.jpg");
         texture3->init();  texture3->setUnit(3);
-        texture3->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+        texture3->setWrapModes(GL_REPEAT, GL_REPEAT);
 
         texture4 = make_shared<Texture>();
         texture4->setFilename(resourceDirectory + "/wall.png");
@@ -737,10 +740,13 @@ public:
 		Projection->pushMatrix();
 		Projection->perspective(45.0f, aspect, 0.01f, 300.0f);
 
-        Game.player->cam.setUpCam(windowManager);
         vector<glm::vec3> lightPositions = Game.getLightPositions();
         vector<glm::vec3> lightColorIntensity = Game.getLightColorIntensity();
+        vector<glm::vec3> lightABC = Game.getLightABC();
         int numLights = lightPositions.size();
+
+        Game.setUpWorld();
+        Game.player->cam.setUpCam(windowManager);
 
 		View->pushMatrix();
 			View->loadIdentity();
@@ -753,6 +759,7 @@ public:
 
         glUniform3fv(matShader->getUniform("lightPositions"), numLights, &lightPositions[0].x);
         glUniform3fv(matShader->getUniform("lightColInt"), numLights, &lightColorIntensity[0].x);
+        glUniform3fv(matShader->getUniform("lightABC"), numLights, &lightABC[0].x);
         glUniform1f(matShader->getUniform("numLights"), numLights);
         
         // Set up scene and draw 
@@ -768,6 +775,13 @@ public:
                     s->draw(matShader);
                 Model->popMatrix();
             }
+            Model->pushMatrix();
+                Game.player->setUp(Model);
+                setModel(matShader, Model);
+                SetMaterial(Game.player->materialID);
+                for (shared_ptr<Shape> s : Game.player->mesh->shapes)
+                    s->draw(matShader);
+            Model->popMatrix();
         Model->popMatrix();
 
         matShader->unbind();
@@ -777,6 +791,7 @@ public:
         glUniformMatrix4fv(texShader->getUniform("V"), 1, GL_FALSE, value_ptr(View->topMatrix()));
         glUniform3fv(texShader->getUniform("lightPositions"), numLights, &lightPositions[0].x);
         glUniform3fv(texShader->getUniform("lightColInt"), numLights, &lightColorIntensity[0].x);
+        glUniform3fv(texShader->getUniform("lightABC"), numLights, &lightABC[0].x);
         glUniform1f(texShader->getUniform("numLights"), numLights);
 
         // Set up scene and draw 

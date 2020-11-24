@@ -6,6 +6,7 @@ uniform sampler2D Texture0;
 
 uniform vec3 lightPositions[MAX_POINT_LIGHTS];
 uniform vec3 lightColInt[MAX_POINT_LIGHTS];
+uniform vec3 lightABC[MAX_POINT_LIGHTS];
 uniform float numLights;
 
 uniform float flip;
@@ -23,12 +24,13 @@ void main() {
     vec4 texColor0 = texture(Texture0, vTexCoord);
     vec3 normal = flip * normalize(fragNor);
     vec3 tempColor = vec3(0,0,0);
-    float a = 0;
-    float b = 1;
-    float c = 0.1;
 
     for(int i = 0; i < numLights; i++)
     {
+        float a = lightABC[i].x;
+        float b = lightABC[i].y;
+        float c = lightABC[i].z;
+
         float lightDist = distance(lightPositions[i], fragPos);
         vec3 L = normalize(lightPositions[i] - fragPos);
 

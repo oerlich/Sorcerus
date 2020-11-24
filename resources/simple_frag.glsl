@@ -13,6 +13,7 @@ uniform float shine;
 
 uniform vec3 lightPositions[MAX_POINT_LIGHTS];
 uniform vec3 lightColInt[MAX_POINT_LIGHTS];
+uniform vec3 lightABC[MAX_POINT_LIGHTS];
 uniform float numLights;
 
 out vec4 color;
@@ -25,12 +26,13 @@ void main()
     vec3 normal = normalize(fragNor);
     vec3 V = normalize(eye-fragPos);
     vec3 tempColor = vec3(0,0,0);
-    float a = 0;
-    float b = 1;
-    float c = 0.1;
 
     for(int i = 0; i < numLights; i++)
     {
+        float a = lightABC[i].x;
+        float b = lightABC[i].y;
+        float c = lightABC[i].z;
+
         float lightDist = distance(lightPositions[i], fragPos);
         vec3 L = normalize(lightPositions[i] - fragPos);
         vec3 H = normalize(L + V);

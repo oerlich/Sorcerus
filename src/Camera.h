@@ -23,6 +23,8 @@ public:
     glm::vec3 eye;
     glm::vec3 lookAt;
     glm::vec3 upVector;
+    glm::vec3 gaze;
+
     bool dollyF;
     bool dollyB;
     bool strafeR;
@@ -33,8 +35,11 @@ public:
     Camera(float sIn, float sens, glm::vec3 initPos);
     virtual ~Camera();
     void setUpCam(WindowManager* windowManager);
+    void setEyePos(glm::vec3 pos);
     void setSpeed(float s);
     void enableCursor(WindowManager* windowManager);
+
+    float getTheta() { return theta; }
 };
 
 #endif

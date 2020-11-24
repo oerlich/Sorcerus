@@ -27,6 +27,11 @@ void Camera::setUpCam(WindowManager * windowManager)
     moveEye();
 }
 
+void Camera::setEyePos(glm::vec3 pos)
+{
+    eye = pos;
+}
+
 void Camera::setSpeed(float s)
 {
     speed = s;
@@ -75,7 +80,7 @@ void Camera::moveLookAt(WindowManager* windowManager)
 
 void Camera::moveEye()
 {
-    glm::vec3 gaze = normalize(lookAt - eye);
+    gaze = normalize(lookAt - eye);
     glm::vec3 strafeAxis = normalize(cross(gaze, upVector));
 
     if (dollyF)

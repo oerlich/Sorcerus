@@ -12,15 +12,16 @@ class Entity
 private:
     
 protected:
+    
+    Entity(glm::vec3 startPos, glm::vec3 scaleFactors, float xAngle, float yAngle, float zAngle, Mesh* m, std::shared_ptr<Texture> texture, int matID);
+
+public:
     glm::vec3 worldPos;
     glm::vec3 scaleFactors;
     float xRot;
     float yRot;
     float zRot;
-    
-    Entity(glm::vec3 startPos, glm::vec3 scaleFactors, float xAngle, float yAngle, float zAngle, Mesh* m, std::shared_ptr<Texture> texture, int matID);
 
-public:
     Mesh* mesh;
     std::shared_ptr<Texture> tex;
     int materialID;
