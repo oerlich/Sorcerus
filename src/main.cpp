@@ -94,7 +94,7 @@ public:
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
         if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-            Game.player->cam.enableCursor(windowManager);
+            Game.player->getCam()->enableCursor(windowManager);
         }
         if (key == GLFW_KEY_C && action == GLFW_RELEASE) {
             glfwSetInputMode(windowManager->getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -746,16 +746,16 @@ public:
         int numLights = lightPositions.size();
 
         Game.setUpWorld();
-        Game.player->cam.setUpCam(windowManager);
+        Game.player->getCam()->setUpCam(windowManager);
 
 		View->pushMatrix();
 			View->loadIdentity();
-            View->lookAt(Game.player->cam.eye, Game.player->cam.lookAt, Game.player->cam.upVector);
+            View->lookAt(Game.player->getCam()->eye, Game.player->getCam()->lookAt, Game.player->getCam()->upVector);
             
         matShader->bind();
 		glUniformMatrix4fv(matShader->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
 		glUniformMatrix4fv(matShader->getUniform("V"), 1, GL_FALSE, value_ptr(View->topMatrix()));
-        glUniform3f(matShader->getUniform("eye"), Game.player->cam.eye.x, Game.player->cam.eye.y, Game.player->cam.eye.z);
+        glUniform3f(matShader->getUniform("eye"), Game.player->getCam()->eye.x, Game.player->getCam()->eye.y, Game.player->getCam()->eye.z);
 
         glUniform3fv(matShader->getUniform("lightPositions"), numLights, &lightPositions[0].x);
         glUniform3fv(matShader->getUniform("lightColInt"), numLights, &lightColorIntensity[0].x);

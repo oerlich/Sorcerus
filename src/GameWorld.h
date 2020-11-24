@@ -23,8 +23,8 @@ private:
     float g;
 
     bool checkColl(Entity * e1, Entity * e2);
+    void checkPlayerBlocked();
 
-    void calcPlayerPos();
 public:
     GameWorld();
     virtual ~GameWorld();
