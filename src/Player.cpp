@@ -1,7 +1,7 @@
 #include "Player.h"
 
 
-Player::Player(glm::vec3 startPos, glm::vec3 sFactors, float xAngle, float yAngle, float zAngle, Mesh* m, std::shared_ptr<Texture> texture, int matID, float h) :
+Player::Player(glm::vec3 startPos, glm::vec3 sFactors, float xAngle, float yAngle, float zAngle, Mesh* m, std::shared_ptr<Texture> texture, int matID, float h, Mesh * playerhitbox) :
     Entity(startPos, sFactors, xAngle, yAngle, zAngle, m, texture, matID),
     height(h),
     cam(0.01, 0.2, glm::vec3(startPos.x, startPos.y + height, startPos.z))
@@ -12,7 +12,8 @@ Player::Player(glm::vec3 startPos, glm::vec3 sFactors, float xAngle, float yAngl
     belowBlocked = true;
 
     verticalVelocity = 0.0f;
-    speed = 0.01;
+    speed = 0.03;
+    hitbox = playerhitbox;
 }
 
 void Player::setUp(std::shared_ptr<MatrixStack> Model)
@@ -33,40 +34,33 @@ void Player::calcPlayerPos(float g)
     glm::vec3 prevPos = nextPos;
 
 
-    if (moveF)
+    if (moveF && !frontBlocked)
     {
-        if(!frontBlocked)
-            nextPos += speed * normalize(glm::vec3(gaze.x, 0, gaze.z));
+        nextPos += speed * normalize(glm::vec3(gaze.x, 0, gaze.z));
     }
-    if (moveB)
+    if (moveB && !backBlocked)
     {
-        if(!backBlocked)
-            nextPos -= speed * normalize(glm::vec3(gaze.x, 0, gaze.z));
+        nextPos -= speed * normalize(glm::vec3(gaze.x, 0, gaze.z));
     }
-    if (moveR)
+    if (moveR && !rightBlocked)
     {
-        if(!rightBlocked)
-            nextPos += speed * strafeAxis;
+        nextPos += speed * strafeAxis;
     }
-    if (moveL)
+    if (moveL && !leftBlocked)
     {
-        if(!leftBlocked)
-            nextPos -= speed * strafeAxis;
+        nextPos -= speed * strafeAxis;
     }
     if (jump && belowBlocked)
     {
-        if (!(aboveBlocked))
-        {
-            belowBlocked = false;
-            verticalVelocity += 0.045;
-        }
+        belowBlocked = false;
+        verticalVelocity += 0.045;
     }
 
-
+    /*
     if (belowBlocked)
         verticalVelocity = 0;
     else
-        verticalVelocity = glm::max(verticalVelocity + g, -0.1f);
+        verticalVelocity = glm::max(verticalVelocity + g, -0.1f);*/
 
     nextPos.y += verticalVelocity;
 

@@ -44,3 +44,22 @@ Mesh::Mesh(std::vector<tinyobj::shape_t> TOshapes)
 Mesh::~Mesh()
 {
 }
+
+std::vector<glm::vec3> Mesh::recalcBBox(glm::mat4 transform)
+{
+    glm::vec4 newMin = transform * glm::vec4(gMin, 1);
+    glm::vec4 newMax = transform * glm::vec4(gMax, 1);
+    glm::vec3 retMin;
+    glm::vec3 retMax;
+
+    retMin.x = (newMin.x <= newMax.x) ? newMin.x : newMax.x;
+    retMin.y = (newMin.y <= newMax.y) ? newMin.y : newMax.y;
+    retMin.z = (newMin.z <= newMax.z) ? newMin.z : newMax.z;
+
+    retMax.x = (newMin.x > newMax.x) ? newMin.x : newMax.x;
+    retMax.y = (newMin.y > newMax.y) ? newMin.y : newMax.y;
+    retMax.z = (newMin.z > newMax.z) ? newMin.z : newMax.z;
+
+    return std::vector<glm::vec3>{retMin, retMax};
+}
+

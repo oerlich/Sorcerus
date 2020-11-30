@@ -130,10 +130,10 @@ public:
             Game.player->jump = false;
         }
         if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS) {
-            Game.player->setSpeed(0.03);
+            Game.player->setSpeed(0.05);
         }
         if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE) {
-            Game.player->setSpeed(0.015);
+            Game.player->setSpeed(0.03);
         }
 		if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -396,11 +396,20 @@ public:
             geometry["floor"] = new Mesh(TOshapes);
         }
 
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/playerhitbox.obj").c_str());
+
+        if (!rc) {
+            cerr << errStr << endl;
+        }
+        else {
+            geometry["playerhitbox"] = new Mesh(TOshapes);
+        }
+
 	}
 
     void initWorld()
     {  
-        Game.player = new Player(vec3(-0.5, -1.5, 3.5), vec3(0.006, 0.006, 0.006), -M_PI/2, M_PI/2, 0.0, geometry["player"], nullptr, 1, 1.0);
+        Game.player = new Player(vec3(-0.5, -1.4, 3.5), vec3(0.006, 0.006, 0.006), -M_PI/2, M_PI/2, 0.0, geometry["player"], nullptr, 1, 1.0, geometry["playerhitbox"]);
 
         //fountain
         Game.addEntity(new Obstacle(vec3(-0.5, -1.5, 0.5), vec3(0.002, 0.002, 0.002), 0.0f, 0.0f, 0.0f, geometry["fountain"], texture1, 0));

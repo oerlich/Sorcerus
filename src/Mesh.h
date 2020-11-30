@@ -20,6 +20,8 @@ public:
     glm::vec3 center;
     std::vector<std::shared_ptr<Shape>> shapes;
 
+    std::vector<glm::vec3> recalcBBox(glm::mat4 transform);
+
 private:
 
 };
