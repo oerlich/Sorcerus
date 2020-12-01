@@ -67,6 +67,7 @@ public:
 
     GameWorld Game = GameWorld();
 
+    bool first = true;
     //skybox
     vector<std::string> skyfaces{
         "night_right.tga",
@@ -93,6 +94,10 @@ public:
 		{
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
+        if (key == GLFW_KEY_P && action == GLFW_PRESS)
+        {
+            cout << glfwGetTime() << endl;
+        }
         if (key == GLFW_KEY_C && action == GLFW_PRESS) {
             Game.player->getCam()->enableCursor(windowManager);
         }
@@ -757,6 +762,13 @@ public:
         Game.setUpWorld();
         Game.player->getCam()->setUpCam(windowManager);
 
+        if (first)
+        {
+            vec3 test = Game.player->mesh->calcCenter(15);
+            cout << test.x << ", " << test.y << ", " << test.z << endl;
+            first = false;
+        }
+
 		View->pushMatrix();
 			View->loadIdentity();
             View->lookAt(Game.player->getCam()->eye, Game.player->getCam()->lookAt, Game.player->getCam()->upVector);
@@ -777,19 +789,13 @@ public:
             for (Entity* e : Game.getNoTexEntities())
             {
                 Model->pushMatrix();
-                e->setUp(Model);
-                setModel(matShader, Model);
                 SetMaterial(e->materialID);
-                for (shared_ptr<Shape> s : e->mesh->shapes)
-                    s->draw(matShader);
+                e->setUpAndDraw(Model, matShader);
                 Model->popMatrix();
             }
             Model->pushMatrix();
-                Game.player->setUp(Model);
-                setModel(matShader, Model);
                 SetMaterial(Game.player->materialID);
-                for (shared_ptr<Shape> s : Game.player->mesh->shapes)
-                    s->draw(matShader);
+                Game.player->setUpAndDraw(Model, matShader);
             Model->popMatrix();
         Model->popMatrix();
 
@@ -811,12 +817,9 @@ public:
             if (e->tex)
             {
                 Model->pushMatrix();
-                e->setUp(Model);
-                setModel(texShader, Model);
                 glUniform1f(texShader->getUniform("flip"), 1);
                 e->tex->bind(texShader->getUniform("Texture0"));
-                for (shared_ptr<Shape> s : e->mesh->shapes)
-                    s->draw(texShader);
+                e->setUpAndDraw(Model, texShader);
                 Model->popMatrix();
             }
         }

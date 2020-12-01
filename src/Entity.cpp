@@ -8,6 +8,7 @@ Entity::Entity(glm::vec3 startPos, glm::vec3 sFactors, float xAngle, float yAngl
     yRot = yAngle;
     zRot = zAngle;
     mesh = m;
+    hitbox = m;
     tex = texture;
     materialID = matID;
 }

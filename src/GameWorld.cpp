@@ -2,7 +2,8 @@
 
 GameWorld::GameWorld()
 {
-    g = -0.00098;
+    //g = -0.0098;
+    g = 0;
 }
 
 GameWorld::~GameWorld()
@@ -21,7 +22,8 @@ void GameWorld::checkPlayerBlocked()
     bool texColl;
     bool noTexColl;
 
-    glm::vec3 playerForward = normalize(player->cam.lookAt - player->cam.eye);
+    glm::vec3 gaze = normalize(player->cam.lookAt - player->cam.eye);
+    glm::vec3 playerForward = normalize(glm::vec3(gaze.x, 0, gaze.z));
     glm::vec3 playerStrafe = normalize(cross(playerForward, player->cam.upVector));
     glm::vec3 playerUp = player->cam.upVector;
 
@@ -29,59 +31,64 @@ void GameWorld::checkPlayerBlocked()
 
     DummyModel->pushMatrix();
         DummyModel->loadIdentity();
-        player->setUp(DummyModel);
         //forward
         DummyModel->pushMatrix();
-            DummyModel->translate(0.6f*playerForward);
-            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix());
-            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix());
+            DummyModel->translate(0.1f*playerForward);
+            player->setUp(DummyModel);
+            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix(), player);
+            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix(), player);
             player->frontBlocked = (texColl || noTexColl);
         DummyModel->popMatrix();
         //backward
         DummyModel->pushMatrix();
-            DummyModel->translate(-0.6f*playerForward);
-            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix());
-            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix());
+            DummyModel->translate(-0.1f*playerForward);
+            player->setUp(DummyModel);
+            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix(), player);
+            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix(), player);
             player->backBlocked = (texColl || noTexColl);
         DummyModel->popMatrix();
         //left
         DummyModel->pushMatrix();
-            DummyModel->translate(-0.6f*playerStrafe);
-            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix());
-            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix());
+            DummyModel->translate(-0.1f*playerStrafe);
+            player->setUp(DummyModel);
+            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix(), player);
+            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix(), player);
             player->leftBlocked = (texColl || noTexColl);
         DummyModel->popMatrix();
         //right
         DummyModel->pushMatrix();
-            DummyModel->translate(0.6f*playerStrafe);
-            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix());
-            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix());
+            DummyModel->translate(0.1f*playerStrafe);
+            player->setUp(DummyModel);
+            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix(), player);
+            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix(), player);
             player->rightBlocked = (texColl || noTexColl);
         DummyModel->popMatrix();
         //up
         DummyModel->pushMatrix();
-            DummyModel->translate(glm::max(player->getVertV() + g, -0.1f)*playerUp);
-            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix());
-            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix());
+            DummyModel->translate(player->getVertV()*playerUp);
+            player->setUp(DummyModel);
+            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix(), player);
+            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix(), player);
             player->aboveBlocked = (texColl || noTexColl);
         DummyModel->popMatrix();
         //down
         DummyModel->pushMatrix();
-            DummyModel->translate(glm::max(player->getVertV() + g, -0.1f)*playerUp);
-            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix());
-            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix());
+            DummyModel->translate((player->getVertV() + g)*playerUp);
+            player->setUp(DummyModel);
+            texColl = checkAllColl(texturedEntities, DummyModel->topMatrix(), player);
+            noTexColl = checkAllColl(noTexEntities, DummyModel->topMatrix(), player);
             player->belowBlocked = (texColl || noTexColl);
         DummyModel->popMatrix();
     DummyModel->popMatrix();
 }
 
-bool GameWorld::checkAllColl(std::vector<Entity*> entities, glm::mat4 playerTrans)
+bool GameWorld::checkAllColl(const std::vector<Entity*> &entities, glm::mat4 objectTrans, Entity * object)
 {
     auto DummyModel = std::make_shared<MatrixStack>();
     std::vector<glm::vec3> newBBoxO;
     bool collRes = false;
 
-    std::vector<glm::vec3> newBBoxP = player->hitbox->recalcBBox(playerTrans);
+    std::vector<glm::vec3> newBBoxP = object->hitbox->recalcBBox(objectTrans);
 
     DummyModel->pushMatrix();
         DummyModel->loadIdentity();

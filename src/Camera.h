@@ -40,6 +40,7 @@ public:
     void enableCursor(WindowManager* windowManager);
 
     float getTheta() { return theta; }
+    float getPhi() { return phi; }
 };
 
 #endif

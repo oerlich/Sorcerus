@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "MatrixStack.h"
+#include "Program.h"
 #include <glm/gtc/type_ptr.hpp>
 
 class Entity
@@ -23,11 +24,13 @@ public:
     float zRot;
 
     Mesh* mesh;
+    Mesh * hitbox;
     std::shared_ptr<Texture> tex;
     int materialID;
 
     void setPosition(glm::vec3 position);
     glm::vec3 getPosition();
+    virtual void setUpAndDraw(std::shared_ptr<MatrixStack> Model, std::shared_ptr<Program> shader) = 0;
     virtual void setUp(std::shared_ptr<MatrixStack> Model) = 0;
 };
 

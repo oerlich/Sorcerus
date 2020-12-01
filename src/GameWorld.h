@@ -24,7 +24,7 @@ private:
 
     bool checkColl(glm::vec3 min1, glm::vec3 max1, glm::vec3 min2, glm::vec3 max2);
     void checkPlayerBlocked();
-    bool checkAllColl(std::vector<Entity*> entities, glm::mat4 playerTrans);
+    bool checkAllColl(const std::vector<Entity*> &entities, glm::mat4 objectTrans, Entity * object);
 
 public:
     GameWorld();

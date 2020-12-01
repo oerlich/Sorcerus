@@ -21,6 +21,11 @@ public:
     std::vector<std::shared_ptr<Shape>> shapes;
 
     std::vector<glm::vec3> recalcBBox(glm::mat4 transform);
+    glm::vec3 calcCenter(int index) {
+        return glm::vec3((shapes[index]->min.x + shapes[index]->max.x) / 2,
+                         (shapes[index]->min.y + shapes[index]->max.y) / 2,
+                         (shapes[index]->min.y + shapes[index]->max.y) / 2);
+    }
 
 private:
 

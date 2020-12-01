@@ -2,6 +2,9 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "Entity.h"
 #include "Camera.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -13,9 +16,16 @@ private:
 
     float verticalVelocity;
     float speed;
+    bool basePosition;
+    bool isAnimating;
+
+    int animID;
+
+    float animStartTime;
 
 public:
     Player(glm::vec3 startPos, glm::vec3 scaleFactors, float xAngle, float yAngle, float zAngle, Mesh* m, std::shared_ptr<Texture> texture, int matID, float h, Mesh* phbox);
+    void setUpAndDraw(std::shared_ptr<MatrixStack> Model, std::shared_ptr<Program> shader);
     void setUp(std::shared_ptr<MatrixStack> Model);
 
     void calcPlayerPos(float g);
@@ -40,8 +50,6 @@ public:
     bool backBlocked;
     bool leftBlocked;
     bool rightBlocked;
-
-    Mesh * hitbox;
 };
 
 #endif

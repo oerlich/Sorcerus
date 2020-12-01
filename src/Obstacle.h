@@ -12,6 +12,7 @@ private:
 
 public:
     Obstacle(glm::vec3 startPos, glm::vec3 scaleFactors, float xAngle, float yAngle, float zAngle, Mesh* m, std::shared_ptr<Texture> texture, int matID);
+    void setUpAndDraw(std::shared_ptr<MatrixStack> Model, std::shared_ptr<Program> shader);
     void setUp(std::shared_ptr<MatrixStack> Model);
 
 };
