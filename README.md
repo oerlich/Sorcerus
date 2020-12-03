@@ -2,22 +2,25 @@
 Final Project - Sorcerus - Oren Erlich
 =====
 
-W - Move forward (y is locked)
+W - Move forward
 
 A - Move left
 
-S - Move backward (y is locked)
+S - Move backward
 
 D - Move right
 
-Spacebar - Move camera up
+Spacebar - Jump
 
-Left Control - Move Camera down
+Left Shift - Sprint
 
-Left Shift (hold) - increase camera speed
+Left Click - Fire Spell
 
 C (hold) - release cursor
 
+ESC - Exit
+
 ====
 
-The lighting in the scene is multiple lights with distance attenuation, as well as one "global" directional light representing moonlight.
+To compile:
+

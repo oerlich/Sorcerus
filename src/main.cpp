@@ -147,12 +147,6 @@ public:
         if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE) {
             Game.player->setSpeed(0.03);
         }
-        if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-            Game.player->worldPos += vec3(0, -0.1, 0);
-        }
-        if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
-            Game.player->worldPos += vec3(0, 0.1, 0);
-        }
 		if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		}
