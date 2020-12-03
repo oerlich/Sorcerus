@@ -18,10 +18,10 @@
 #include "MatrixStack.h"
 #include "WindowManager.h"
 #include "Mesh.h"
+#include "Animation.h"
 #include "Camera.h"
 #include "Obstacle.h"
 #include "Texture.h"
-#include "Interpolater.h"
 #include "GameWorld.h"
 #include "stb_image.h"
 
@@ -60,6 +60,7 @@ public:
     shared_ptr<Texture> texture10;
     shared_ptr<Texture> texture11;
     shared_ptr<Texture> texture12;
+    shared_ptr<Texture> texture13;
     unsigned int cubeMapTexture;
 
 
@@ -67,7 +68,9 @@ public:
 
     GameWorld Game = GameWorld();
 
-    bool first = true;
+    bool walking = false;
+    bool reverse = false;
+
     //skybox
     vector<std::string> skyfaces{
         "night_right.tga",
@@ -106,15 +109,19 @@ public:
         }
         if (key == GLFW_KEY_W && action == GLFW_PRESS) {
             Game.player->moveF = true;
+            walking = true;
         }
         if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
             Game.player->moveF = false;
+            walking = false;
         }
         if (key == GLFW_KEY_S && action == GLFW_PRESS) {
             Game.player->moveB = true;
+            reverse = true;
         }
         if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
             Game.player->moveB = false;
+            reverse = false;
         }
         if (key == GLFW_KEY_A && action == GLFW_PRESS) {
             Game.player->moveL = true;
@@ -140,6 +147,12 @@ public:
         if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE) {
             Game.player->setSpeed(0.03);
         }
+        if (key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+            Game.player->worldPos += vec3(0, -0.1, 0);
+        }
+        if (key == GLFW_KEY_UP && action == GLFW_PRESS) {
+            Game.player->worldPos += vec3(0, 0.1, 0);
+        }
 		if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		}
@@ -154,8 +167,13 @@ public:
 
 		if (action == GLFW_PRESS)
 		{
-			 glfwGetCursorPos(window, &posX, &posY);
-			 cout << "Pos X " << posX <<  " Pos Y " << posY << endl;
+            glm::vec3 spawnPos = Game.player->getCam()->eye + 0.15f*Game.player->gaze;
+            
+            Game.player->playAnimation(0);
+            Game.addProjectile(make_shared<Projectile>(spawnPos, vec3(0.5, 0.5, 0.5),
+                0,
+                Game.player->yRot, Game.player->zRot, geometry["energy_bolt"],
+                texture13, 16, Game.player->gaze, 0.2, true, vec3(0.541, 0.169, 0.886), vec3(0, 1, 0.1)));
 		}
 	}
 
@@ -390,6 +408,9 @@ public:
         }
         else {
             geometry["player"] = new Mesh(TOshapes);
+            geometry["player"]->meshAnimations.push_back(new Animation(resourceDirectory + "/player_anim/player_fire"));
+            geometry["player"]->meshAnimations.push_back(new Animation(resourceDirectory + "/player_anim/player_walk"));
+            geometry["player"]->meshAnimations.push_back(new Animation(resourceDirectory + "/player_anim/player_rev"));
         }
 
         rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/floor.obj").c_str());
@@ -410,11 +431,30 @@ public:
             geometry["playerhitbox"] = new Mesh(TOshapes);
         }
 
+        rc = tinyobj::LoadObj(TOshapes, objMaterials, errStr, (resourceDirectory + "/energy_bolt.obj").c_str());
+
+        if (!rc) {
+            cerr << errStr << endl;
+        }
+        else {
+            geometry["energy_bolt"] = new Mesh(TOshapes);
+        }
+
 	}
 
     void initWorld()
     {  
         Game.player = new Player(vec3(-0.5, -1.4, 3.5), vec3(0.006, 0.006, 0.006), -M_PI/2, M_PI/2, 0.0, geometry["player"], nullptr, 1, 1.0, geometry["playerhitbox"]);
+        //Game.addLight(vec3(-0.5, 0.43, -4.25), vec3(1.0, 0.57647, 0.16078), vec3(0, 1, 0.1));
+
+        // coordinate system
+        /*
+        {
+            Game.addEntity(new Obstacle(vec3(0, -1.5, 0), vec3(0.01, 0.01, 50), 0.0f, 0.0f, 0.0f, geometry["cube_notex"], nullptr, 15));
+            Game.addEntity(new Obstacle(vec3(0, -1.5, 0), vec3(0.01, 50, 0.01), 0.0f, 0.0f, 0.0f, geometry["cube_notex"], nullptr, 15));
+            Game.addEntity(new Obstacle(vec3(0, -1.5, 0), vec3(50, 0.01, 0.01), 0.0f, 0.0f, 0.0f, geometry["cube_notex"], nullptr, 15));
+        }*/
+        
 
         //fountain
         Game.addEntity(new Obstacle(vec3(-0.5, -1.5, 0.5), vec3(0.002, 0.002, 0.002), 0.0f, 0.0f, 0.0f, geometry["fountain"], texture1, 0));
@@ -529,10 +569,9 @@ public:
             Game.addEntity(new Obstacle(vec3(-6, -0.65, 0), vec3(0.1, 3, 14), 0.0f, 0.0f, 0.0f, geometry["cube_notex"], nullptr, 15));
             Game.addEntity(new Obstacle(vec3(0, -0.65, 6), vec3(14, 3, 0.1), 0.0f, 0.0f, 0.0f, geometry["cube_notex"], nullptr, 15));
         }
-
+        
         // floor
         Game.addEntity(new Obstacle(vec3(0, -1.5, 0), vec3(1, 1, 1), 0.0f, 0.0f, 0.0f, geometry["floor"], texture3, 11));
-        
     }
 
     void initTex(const std::string& resourceDirectory) {
@@ -598,8 +637,13 @@ public:
 
         texture12 = make_shared<Texture>();
         texture12->setFilename(resourceDirectory + "/fire_tex.png");
-        texture12->init();  texture12->setUnit(11);
+        texture12->init();  texture12->setUnit(12);
         texture12->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+
+        texture13 = make_shared<Texture>();
+        texture13->setFilename(resourceDirectory + "/energy_bolt.png");
+        texture13->init();  texture13->setUnit(13);
+        texture13->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
     }
 
     unsigned int createSky(string dir, vector<string> faces) {
@@ -730,6 +774,12 @@ public:
             glUniform3f(matShader->getUniform("MatSpec"), 0.0, 0.0, 0.0);
             glUniform1f(matShader->getUniform("shine"), 0.0);
             break;
+        case 16: //energy
+            glUniform3f(matShader->getUniform("MatAmb"), 0.0, 0.0, 0.0);
+            glUniform3f(matShader->getUniform("MatDif"), 238/255, 219/255, 255/255);
+            glUniform3f(matShader->getUniform("MatSpec"), 238/255, 219/255, 255/255);
+            glUniform1f(matShader->getUniform("shine"), 120.0);
+            break;
         }
 
     }
@@ -757,16 +807,40 @@ public:
         vector<glm::vec3> lightPositions = Game.getLightPositions();
         vector<glm::vec3> lightColorIntensity = Game.getLightColorIntensity();
         vector<glm::vec3> lightABC = Game.getLightABC();
+
         int numLights = lightPositions.size();
+
+        if (walking && !Game.player->isAnimating())
+            Game.player->playAnimation(1);
+        else if(!walking && Game.player->isAnimating() && Game.player->getAnimID() == 1)
+            Game.player->stopAnimation();
+
+        if (reverse && !Game.player->isAnimating())
+            Game.player->playAnimation(2);
+        else if (!reverse && Game.player->isAnimating() && Game.player->getAnimID() == 2)
+            Game.player->stopAnimation();
 
         Game.setUpWorld();
         Game.player->getCam()->setUpCam(windowManager);
 
-        if (first)
+
+        vector<Entity*> texEntities = Game.getTexturedEntities();
+        vector<Entity*> noTexEntities = Game.getNoTexEntities();
+
+        for (shared_ptr<Projectile> p : Game.getProjectiles())
         {
-            vec3 test = Game.player->mesh->calcCenter(15);
-            cout << test.x << ", " << test.y << ", " << test.z << endl;
-            first = false;
+            if (p->lightEmit)
+            {
+                lightPositions.push_back(p->worldPos);
+                lightColorIntensity.push_back(p->lightColor);
+                lightABC.push_back(p->lightABC);
+                numLights++;
+            }
+            if (p->tex)
+                texEntities.push_back(p.get());
+            else
+                noTexEntities.push_back(p.get());
+
         }
 
 		View->pushMatrix();
@@ -786,7 +860,7 @@ public:
         // Set up scene and draw 
         Model->pushMatrix();
             Model->loadIdentity();
-            for (Entity* e : Game.getNoTexEntities())
+            for (Entity* e : noTexEntities)
             {
                 Model->pushMatrix();
                 SetMaterial(e->materialID);
@@ -812,7 +886,7 @@ public:
         // Set up scene and draw 
         Model->pushMatrix();
         Model->loadIdentity();
-        for (Entity* e : Game.getTexturedEntities())
+        for (Entity* e : texEntities)
         {
             if (e->tex)
             {

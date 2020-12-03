@@ -17,7 +17,6 @@ private:
     float verticalVelocity;
     float speed;
     bool basePosition;
-    bool isAnimating;
 
     int animID;
 
@@ -33,10 +32,18 @@ public:
     void setPosition(glm::vec3 position);
     void setSpeed(float s) { speed = s; }
 
+    void playAnimation(int animationID);
+    void stopAnimation();
+    bool isAnimating() { return (animID != -1); }
+
+    int getAnimID() { return animID; }
+
     float getVertV() { return verticalVelocity; };
     
     Camera cam;
     Camera* getCam() { return &cam; }
+
+    glm::vec3 gaze;
 
     bool moveF;
     bool moveB;

@@ -10,6 +10,7 @@
 #include <tiny_obj_loader/tiny_obj_loader.h>
 
 #include "Shape.h"
+#include "Animation.h"
 
 class Mesh {
 public:
@@ -19,6 +20,8 @@ public:
     glm::vec3 gMax;
     glm::vec3 center;
     std::vector<std::shared_ptr<Shape>> shapes;
+
+    std::vector<Animation *> meshAnimations;
 
     std::vector<glm::vec3> recalcBBox(glm::mat4 transform);
     glm::vec3 calcCenter(int index) {
